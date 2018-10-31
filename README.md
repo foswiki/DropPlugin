@@ -1,0 +1,2 @@
+# DropPlugin
+Foswiki DropPlugin

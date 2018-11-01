@@ -37,7 +37,7 @@ As per the GPL, removal of this notice is prohibited.
     self.opts = $.extend({}, defaults, self.elem.data(), opts);
     self.form = self.elem.find(".dropPluginForm");
     self.validationKey = self.form.find("[name=validation_key]");
-    self.mimeRegex = self.opts.mime && self.opts.mime.length?new RegExp("\.(" + self.opts.mime + ")$", "i"):null;
+    self.mimeRegex = self.opts.mime && self.opts.mime.length?new RegExp("\.(" + self.opts.mime + ")$", "i"):null; // eslint-disable-line no-useless-escape
     self.init();
   }
 
@@ -74,15 +74,15 @@ As per the GPL, removal of this notice is prohibited.
         add: function (e, data) {
             var origName = data.files[0].name;
             // Check if it's allowed to be dropped here
-            if (self.mimeRegex && self.mimeRegEx.test(origName)) { // eslint-disable-line no-useless-escape
+            if (!self.isAllowed(origName)) {
                 $.pnotify({
                     text: "Cannot drop " + origName + ",  file type mismatch",
                     type: "error" });
                 self.elem.removeClass("hover");
-               return;
+            } else {
+              data.files[0].uploadName = self.form.find("[name=name]").val();
+              data.submit();
             }
-            data.files[0].uploadName = self.form.find("[name=name]").val();
-            data.submit();
         },
         fail: function(e, data) {
             var response = data.jqXHR.responseJSON
@@ -131,6 +131,12 @@ As per the GPL, removal of this notice is prohibited.
             self.elem.removeClass("hover");
         }
     });
+  };
+
+  DropZone.prototype.isAllowed = function(name) {
+    var self = this;
+
+    return !self.mimeRegex || self.mimeRegex.test(name);
   };
 
   // A plugin wrapper around the constructor,

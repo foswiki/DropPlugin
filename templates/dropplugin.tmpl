@@ -1,7 +1,7 @@
 :outer formats a drop zone
 
-%TMPL:DEF{"DropPlugin:outer"}%<div class="dropPluginZone">
- <form class="dropPluginForm" data-mime="%extensions%" method="POST">
+%TMPL:DEF{"DropPlugin:outer"}%<div class="dropPluginZone" data-mime="%extensions%">
+ <form class="dropPluginForm" method="POST">
   <input type="hidden" name="name" value="%attachment%">
   <input type="hidden" name="topic" value="%WEB%.%TOPIC%">
   %TMPL:P{"DropPlugin:inner" empty="%empty%" attachment="%attachment%"}%

@@ -88,7 +88,7 @@ sub _DROP {
           Foswiki::Func::expandTemplate( '"DropPlugin:outer" empty="'
               . $empty
               . '" extensions="'
-              . $exts . '"'
+              . $exts
               . '" attachment="'
               . $name
               . '"' );

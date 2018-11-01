@@ -22,104 +22,132 @@ As per the GPL, removal of this notice is prohibited.
 /* global StrikeOne:false */
 
 "use strict";
-jQuery(function($) {
-        // Hack to remove the TopicInteractionPlugin dropzone from $("body")
-        // so our other dropzones fire when DropPlugin is active on the page.
-        $(".dropPluginForm").first().each(function() {
-            $("body").fileupload("destroy");
-        });
+(function($) {
 
-        $(".dropPluginForm").each(function() {
-            var $form = $(this), 
-                $validationKey = $form.find("[name=validation_key]"),
-                $dropZone = $form.parent();
+  // Create the defaults once
+  var defaults = {
+    mime: ""
+  };
 
-            // Get legal extensions
-            var extensions = $form.data('mime');
+  // The actual plugin constructor
+  function DropZone(elem, opts) {
+    var self = this;
 
-            // Add/remove CSS when the drop target is dragged over
-            $dropZone.on("dragenter", function() {
-              $dropZone.addClass("hover");
-            }).on("dragleave dragexit dragged", function() {
-              $dropZone.removeClass("hover");
+    self.elem = $(elem);
+    self.opts = $.extend({}, defaults, self.elem.data(), opts);
+    self.form = self.elem.find(".dropPluginForm");
+    self.validationKey = self.form.find("[name=validation_key]");
+    self.mimeRegex = self.opts.mime.length?new RegExp("\.(" + self.opts.mime + ")$", "i"):null;
+    self.init();
+  }
+
+  DropZone.prototype.init = function () {
+    var self = this;
+
+    // Hack to remove the TopicInteractionPlugin dropzone from $("body")
+    // so our other dropzones fire when DropPlugin is active on the page.
+    $("body").fileupload("destroy");
+
+    // Add/remove CSS when the drop target is dragged over
+    self.elem.on("dragenter", function() {
+      self.elem.addClass("hover");
+    }).on("dragleave dragexit dragged", function() {
+      self.elem.removeClass("hover");
+    });
+
+    // Attach the file upload plugin
+    self.form.fileupload({
+        // url: foswiki.getScriptUrl("rest", "DropPlugin", "upload"),
+        url: foswiki.getScriptUrl("rest", "TopicInteractionPlugin", "upload"),
+        dataType: 'json',
+        formData: function() {
+            if (self.validationKey.length) {
+              // If validation is enabled
+              self.validationKey.val(StrikeOne.calculateNewKey(self.validationKey.val()));
+            }
+            var data = self.form.serializeArray();
+            // Add random ID for TopicInteractionPlugin/upload REST handler
+            data.push({name: "id", value: Math.ceil(Math.random() * 1000)});
+            return data;
+        },
+        dropZone: self.form,
+        add: function (e, data) {
+            var origName = data.files[0].name;
+            // Check if it's allowed to be dropped here
+            if (self.mimeRegex && self.mimeRegEx.test(origName)) { // eslint-disable-line no-useless-escape
+                $.pnotify({
+                    text: "Cannot drop " + origName + ",  file type mismatch",
+                    type: "error" });
+                self.elem.removeClass("hover");
+               return;
+            }
+            data.files[0].uploadName = self.form.find("[name=name]").val();
+            data.submit();
+        },
+        fail: function(e, data) {
+            var response = data.jqXHR.responseJSON
+                || { error: { message: "unknown error"} };
+            $.pnotify({
+                text: response.error.message,
+                type: "error"
             });
+        },
+        done: function(e, xhr) {
+            var data = xhr.result;
 
-            // Attach the file upload plugin
-            $form.fileupload({
-                // url: foswiki.getScriptUrl("rest", "DropPlugin", "upload"),
-                url: foswiki.getScriptUrl("rest", "TopicInteractionPlugin", "upload"),
-                dataType: 'json',
-                formData: function() {
-                    if ($validationKey.length) {
-                      // If validation is enabled
-                      $validationKey.val(StrikeOne.calculateNewKey($validationKey.val()));
-                    }
-                    var data = $form.serializeArray();
-                    // Add random ID for TopicInteractionPlugin/upload REST handler
-                    data.push({name: "id", value: Math.ceil(Math.random() * 1000)});
-                    return data;
-                },
-                dropZone: $form,
-                add: function (e, data) {
-                    var origName = data.files[0].name;
-                    // Check if it's allowed to be dropped here
-                    if (extensions.length > 0
-                        && !new RegExp("\.(" + extensions + ")$", "i").test(origName)) { // eslint-disable-line no-useless-escape
-                        $.pnotify({
-                            text: "Cannot drop " + origName + ",  file type mismatch",
-                            type: "error" });
-                        $dropZone.removeClass("hover");
-                       return;
-                    }
-                    data.files[0].uploadName = form.name.value;
-                    data.submit();
-                },
-                fail: function(e, data) {
-                    var response = data.jqXHR.responseJSON
-                        || { error: { message: "unknown error"} };
-                    $.pnotify({
-                        text: response.error.message,
-                        type: "error"
-                    });
-                },
-                done: function(e, xhr) {
-                    var data = xhr.result;
+            // Import the new nonce, if validation is enabled
+            if (self.validationKey.length && data.nonce) {
+                self.validationKey.val("?" + data.nonce);
+            }
 
-                    // Import the new nonce, if validation is enabled
-                    if ($validationKey.length && data.nonce) {
-                        $validationKey.val("?" + data.nonce);
+            // Use the RenderPlugin to update the inner zone
+            self.form.find('.dropPluginInner').each(function() {
+                var $inner = $(this);
+                $.ajax({
+                    url: foswiki.getScriptUrl("rest", "RenderPlugin", "template"),
+                    data: {
+                        topic: self.form.find("[name=topic]").val(),
+                        name: "dropplugin",
+                        expand: "DropPlugin:refresh",
+                        attachment: self.form.find("[name=name]").val(),
+                        render: true
+                    },
+                    dataType: 'html',
+                    success: function(data) {
+                        $inner.html(data)
+                            // Force refresh of any images
+                            .find("img").each(function() {
+                                $(this).attr(
+                                    'src',
+                                    $(this).attr('src') + '?t='+new Date());
+                            });
                     }
-
-                    // Use the RenderPlugin to update the inner zone
-                    $form.find('.dropPluginInner').each(function() {
-                        var $inner = $(this);
-                        $.ajax({
-                            url: foswiki.getScriptUrl("rest", "RenderPlugin", "template"),
-                            data: {
-                                topic: form.topic.value,
-                                name: "dropplugin",
-                                expand: "DropPlugin:refresh",
-                                attachment: form.name.value,
-                                render: true
-                            },
-                            dataType: 'html',
-                            success: function(data) {
-                                $inner.html(data)
-                                    // Force refresh of any images
-                                    .find("img").each(function() {
-                                        $(this).attr(
-                                            'src',
-                                            $(this).attr('src') + '?t='+new Date());
-                                    });
-                            }
-                            // Silent fail
-                        });
-                    });
-                },
-                always: function() {
-                    // Dunhoverin
-                    $dropZone.removeClass("hover");
-                }
+                    // Silent fail
+                });
             });
-        });
-});
+        },
+        always: function() {
+            // Dunhoverin
+            self.elem.removeClass("hover");
+        }
+    });
+  };
+
+  // A plugin wrapper around the constructor,
+  // preventing against multiple instantiations
+  $.fn.dropZone = function (opts) {
+    return this.each(function () {
+      if (!$.data(this, "DropZone")) {
+        $.data(this, "DropZone", new DropZone(this, opts));
+      }
+    });
+  };
+
+  // Enable declarative widget instanziation
+  $(function() {
+    $(".dropPluginZone:not(.inited)").livequery(function() {
+      $(this).addClass("inited").dropZone();
+    });
+  });
+
+})(jQuery);

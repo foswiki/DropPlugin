@@ -21,13 +21,15 @@ our $SHORTDESCRIPTION =
   'Support placeholders for drop and display of uploaded content';
 our $NO_PREFS_IN_TOPIC = 1;
 our $templateFile      = 'dropplugin';
-our $registered        = 0;
 
 sub initPlugin {
 
     my ( $topic, $web, $user, $installWeb ) = @_;
 
     Foswiki::Func::registerTagHandler( 'DROP', \&_DROP );
+
+    Foswiki::Plugins::JQueryPlugin::registerPlugin( 'drop',
+        'Foswiki::Plugins::DropPlugin::JQuery' );
 
     return 1;
 }
@@ -79,21 +81,7 @@ sub _DROP {
               . '"' );
     }
     else {
-        unless ($registered) {
-            $registered = 1;
-
-            Foswiki::Plugins::JQueryPlugin::registerPlugin( 'drop',
-                'Foswiki::Plugins::DropPlugin::JQuery' );
-
-            unless (
-                Foswiki::Plugins::JQueryPlugin::createPlugin(
-                    'drop', $Foswiki::Plugins::SESSION
-                )
-              )
-            {
-                die 'Failed to register JQuery plugin';
-            }
-        }
+        Foswiki::Plugins::JQueryPlugin::createPlugin('drop', $Foswiki::Plugins::SESSION);
 
         # :outer will normally TMPL:P :inner
         $template =
@@ -105,6 +93,7 @@ sub _DROP {
               . $name
               . '"' );
     }
+
 
     return $template;
 }

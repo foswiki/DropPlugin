@@ -1,0 +1,12 @@
+,v
+*.swp
+pub/System/DropPlugin/*gz
+pub/System/DropPlugin/drop.js
+pub/System/DropPlugin/drop.css
+/DropPlugin.md5
+/DropPlugin.sha1
+/DropPlugin.tgz
+/DropPlugin.txt
+/DropPlugin.zip
+/DropPlugin_installer
+/DropPlugin_installer.pl

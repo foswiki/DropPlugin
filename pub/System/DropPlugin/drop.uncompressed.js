@@ -18,8 +18,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 As per the GPL, removal of this notice is prohibited.
 
 */
-(function($) {
-    $(document).ready( function() {     
+
+/* global StrikeOne:false */
+
+"use strict";
+jQuery(function($) {
         // Hack to remove the TopicInteractionPlugin dropzone from $("body")
         // so our other dropzones fire when DropPlugin is active on the page.
         $(".dropPluginForm").first().each(function() {
@@ -35,7 +38,7 @@ As per the GPL, removal of this notice is prohibited.
             // Add/remove CSS when the drop target is dragged over
             $(form).closest('.dropPluginZone').each(function() {
                 var $zone = $(this);
-                $zone.on('dragenter', function(e) {
+                $zone.on('dragenter', function() {
                     $('.dropPluginZone').not($zone).removeClass('hover');
                     $zone.addClass('hover');
                 });
@@ -66,7 +69,7 @@ As per the GPL, removal of this notice is prohibited.
                     var origName = data.files[0].name;
                     // Check if it's allowed to be dropped here
                     if (extensions.length > 0
-                        && !new RegExp("\.(" + extensions + ")$", "i").test(origName)) {
+                        && !new RegExp("\.(" + extensions + ")$", "i").test(origName)) { // eslint-disable-line no-useless-escape
                         $.pnotify({
                             text: "Cannot drop " + origName + ",  file type mismatch",
                             type: "error" });
@@ -86,7 +89,7 @@ As per the GPL, removal of this notice is prohibited.
                 },
                 done: function(e, xhr) {
                     var data = xhr.result;
-                    
+
                     // Import the new nonce, if validation is enabled
                     if (this.validation_key && data.nonce)
                         this.validation_key.value = "?" + data.nonce;
@@ -111,10 +114,10 @@ As per the GPL, removal of this notice is prohibited.
                                         $(this).attr(
                                             'src',
                                             $(this).attr('src') + '?t='+new Date());
-                                    });;
+                                    });
                             }
                             // Silent fail
-                        })
+                        });
                     });
                 },
                 always: function() {
@@ -123,5 +126,4 @@ As per the GPL, removal of this notice is prohibited.
                 }
             });
         });
-    });
-})(jQuery);
+});

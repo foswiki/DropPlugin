@@ -30,41 +30,36 @@ jQuery(function($) {
         });
 
         $(".dropPluginForm").each(function() {
-            var form = this;
+            var $form = $(this), 
+                $validationKey = $form.find("[name=validation_key]"),
+                $dropZone = $form.parent();
 
             // Get legal extensions
-            var extensions = $(form).data('mime');
+            var extensions = $form.data('mime');
 
             // Add/remove CSS when the drop target is dragged over
-            $(form).closest('.dropPluginZone').each(function() {
-                var $zone = $(this);
-                $zone.on('dragenter', function() {
-                    $('.dropPluginZone').not($zone).removeClass('hover');
-                    $zone.addClass('hover');
-                });
-                $zone.on('dragleave dragexit dragend', function() {
-                    $zone.removeClass('hover');
-                });
+            $dropZone.on("dragenter", function() {
+              $dropZone.addClass("hover");
+            }).on("dragleave dragexit dragged", function() {
+              $dropZone.removeClass("hover");
             });
 
             // Attach the file upload plugin
-            $(form).fileupload({
+            $form.fileupload({
                 // url: foswiki.getScriptUrl("rest", "DropPlugin", "upload"),
                 url: foswiki.getScriptUrl("rest", "TopicInteractionPlugin", "upload"),
                 dataType: 'json',
                 formData: function() {
-                    if (form.validation_key) {
-                        // If validation is enabled
-                        form.validation_key.value =
-                            StrikeOne.calculateNewKey(
-                                form.validation_key.value);
+                    if ($validationKey.length) {
+                      // If validation is enabled
+                      $validationKey.val(StrikeOne.calculateNewKey($validationKey.val()));
                     }
-                    var data = $(form).serializeArray();
+                    var data = $form.serializeArray();
                     // Add random ID for TopicInteractionPlugin/upload REST handler
                     data.push({name: "id", value: Math.ceil(Math.random() * 1000)});
                     return data;
                 },
-                dropZone: $(form),
+                dropZone: $form,
                 add: function (e, data) {
                     var origName = data.files[0].name;
                     // Check if it's allowed to be dropped here
@@ -73,7 +68,7 @@ jQuery(function($) {
                         $.pnotify({
                             text: "Cannot drop " + origName + ",  file type mismatch",
                             type: "error" });
-                        $(this).closest(".dropPluginZone").removeClass("hover");
+                        $dropZone.removeClass("hover");
                        return;
                     }
                     data.files[0].uploadName = form.name.value;
@@ -91,11 +86,12 @@ jQuery(function($) {
                     var data = xhr.result;
 
                     // Import the new nonce, if validation is enabled
-                    if (this.validation_key && data.nonce)
-                        this.validation_key.value = "?" + data.nonce;
+                    if ($validationKey.length && data.nonce) {
+                        $validationKey.val("?" + data.nonce);
+                    }
 
                     // Use the RenderPlugin to update the inner zone
-                    $(this).find('.dropPluginInner').each(function() {
+                    $form.find('.dropPluginInner').each(function() {
                         var $inner = $(this);
                         $.ajax({
                             url: foswiki.getScriptUrl("rest", "RenderPlugin", "template"),
@@ -122,7 +118,7 @@ jQuery(function($) {
                 },
                 always: function() {
                     // Dunhoverin
-                    $(this).closest(".dropPluginZone").removeClass("hover");
+                    $dropZone.removeClass("hover");
                 }
             });
         });

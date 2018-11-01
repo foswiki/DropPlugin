@@ -26,7 +26,7 @@ As per the GPL, removal of this notice is prohibited.
 
   // Create the defaults once
   var defaults = {
-    mime: ""
+    mime: []
   };
 
   // The actual plugin constructor
@@ -37,16 +37,16 @@ As per the GPL, removal of this notice is prohibited.
     self.opts = $.extend({}, defaults, self.elem.data(), opts);
     self.form = self.elem.find(".dropPluginForm");
     self.validationKey = self.form.find("[name=validation_key]");
-    self.mimeRegex = self.opts.mime.length?new RegExp("\.(" + self.opts.mime + ")$", "i"):null;
+    self.mimeRegex = self.opts.mime && self.opts.mime.length?new RegExp("\.(" + self.opts.mime + ")$", "i"):null;
     self.init();
   }
 
   DropZone.prototype.init = function () {
     var self = this;
 
-    // Hack to remove the TopicInteractionPlugin dropzone from $("body")
+    // disable the global dropzope established by TopicInteractionPlugin 
     // so our other dropzones fire when DropPlugin is active on the page.
-    $("body").fileupload("destroy");
+    $("body").fileupload("option", "dropZone", undefined);
 
     // Add/remove CSS when the drop target is dragged over
     self.elem.on("dragenter", function() {

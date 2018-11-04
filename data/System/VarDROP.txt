@@ -6,11 +6,11 @@
      %TABLE{sort="off"}%
      | *Name* | *Description* | *Default* |
      | =""= | Name to give the attachment when it is uploaded e.g. "Picture.jpg" | required |
-     | =empty= | Prompt to use for the dropzone when nothing has been uploaded yet | Optional, default is to 
+     | =empty= | Text prompt to use for the drop zone when nothing has been uploaded yet | Optional, default is the name of the attachment. |
      | =type= | MIME type for files that can be dropped here. You can use collection types e.g. =image= to allow dropping compatible types. You can disable checking using =type="any"=. | Optional, default is to use the MIME type of the attachment. |
 %ENDSECTION{"DROP_attributes"}%
 ---++ Examples
-   * =%<nop>DROP{"Fruitbat.jpg" type="image" empty="Drop a new bat picture here"}%= create a dropzone for an attachment called =Fruitbat.jpg=.
+   * =%<nop>DROP{"Fruitbat.jpg" type="image" empty="Drop a new bat picture here"}%= create a drop zone for an attachment called =Fruitbat.jpg=.
 %STOPINCLUDE%
 ---++ Related
-DropPlugin
+TopicInteractionPlugin

@@ -12,9 +12,9 @@
 
 %TMPL:DEF{"DropPlugin:inner"}%<div class="dropPluginInner">
 %IF{ 
-   "'%TOPIC%'/attachments[name~'%attachment%']" 
-   then="%PUBURL%/%WEB%/%TOPIC%/%attachment%"
-   else="$percntMIMEICON{\"%attachment%\"}$percnt %empty%"
+   "'%TOPIC%'/attachments[name='%attachment%']" 
+   then="[[$percntPUBURL$percnt/$percntWEB$percnt/$percntTOPIC$percnt/%attachment%][%attachment%]]"
+   else="$percntMIMEICON{$quot%attachment%$quot}$percnt %empty%"
 }%
 </div>%TMPL:END%
 

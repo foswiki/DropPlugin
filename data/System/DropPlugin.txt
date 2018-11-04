@@ -7,12 +7,17 @@ Extends TopicInteractionPlugin to add placeholders to a topic that you can drop 
 %TOC{title="On this page:"}%
 
 ---++ Features
-Supports adding multiple sites on a page where an attachment can be drag-dropped. The attachment will automatically renamed on upload, and can be re-uploaded at any point.
+Add multiple 'drop zones' on a page where an attachment can be drag-dropped. The attachment will automatically renamed on upload to whatever the drop zone specifies. An updated attachment can be drag-dropped onto the same zone as many times as you wish.
 
-Drop sites are defined using a Foswiki template. The standard template inserts a link to the attachment in the topic.
+A user must be logged on, and have permission to attach to the topic, to activate the drop zones.
 
 ---++ Syntax
 %INCLUDE{"%SYSTEMWEB%.VarDROP" section="DROP_attributes"}%
+
+Note that normal TopicInteractionPlugin behaviour is to make the entire page a drop zone for adding attachments. This behaviour is disabled on any page containing a =%<nop>DROP{...}%= macro.
+
+---++ Customisation
+Drop sites are defined using a Foswiki macro, which expands a Foswiki template. The standard template inserts a link to the attachment in the topic.
 
 #Installation
 ---++ Installation Instructions

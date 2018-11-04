@@ -55,7 +55,7 @@ sub _DROP {
 
     my $name  = $params->{_DEFAULT};
     my $type  = $params->{type};
-    my $empty = $params->{empty} || "";
+    my $empty = $params->{empty} || $name;
 
     # Make a RE that matches all legal file extensions
     my $exts = '';
@@ -81,7 +81,8 @@ sub _DROP {
               . '"' );
     }
     else {
-        Foswiki::Plugins::JQueryPlugin::createPlugin('drop', $Foswiki::Plugins::SESSION);
+        Foswiki::Plugins::JQueryPlugin::createPlugin( 'drop',
+            $Foswiki::Plugins::SESSION );
 
         # :outer will normally TMPL:P :inner
         $template =
@@ -94,6 +95,12 @@ sub _DROP {
               . '"' );
     }
 
+    # For some reason, Foswiki 2.1.4 + fcgi doesn't expand these parameters
+    # when the macro is instantiated in the browser (though it works
+    # on the command line)
+    $template =~ s/%empty%/$empty/g;
+    $template =~ s/%extensions%/$exts/g;
+    $template =~ s/%attachment%/$name/g;
 
     return $template;
 }

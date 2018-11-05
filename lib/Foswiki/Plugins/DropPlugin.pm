@@ -12,8 +12,9 @@ use Error ':try';
 use JSON        ();
 use MIME::Types ();
 
-use Foswiki::Func    ();
-use Foswiki::Plugins ();
+use Foswiki::Func                  ();
+use Foswiki::Plugins               ();
+use Foswiki::Plugins::JQueryPlugin ();
 
 our $VERSION = '1.000';
 our $RELEASE = '27 Oct 2018';
@@ -81,8 +82,7 @@ sub _DROP {
               . '"' );
     }
     else {
-        Foswiki::Plugins::JQueryPlugin::createPlugin( 'drop',
-            $Foswiki::Plugins::SESSION );
+        Foswiki::Plugins::JQueryPlugin::createPlugin('drop');
 
         # :outer will normally TMPL:P :inner
         $template =
